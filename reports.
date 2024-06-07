@@ -1,0 +1,297 @@
+<%@ page import="java.io.*, java.sql.*" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Shrutija - EMI Admin Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212; /* Darker background color */
+            overflow: hidden;
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100%;
+            background-color: #1f1f1f; /* Dark background color */
+            color: #fff;
+            padding-top: 20px;
+            transition: width 0.3s ease; /* Smooth transition effect */
+            z-index: 1000; /* Ensure the sidebar is above other content */
+        }
+        .sidebar:hover {
+            width: 300px; /* Expand width on hover */
+        }
+        .sidebar h1 {
+            font-size: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .nav {
+            list-style-type: none;
+            padding: 0;
+        }
+        .nav li {
+            margin-bottom: 10px;
+        }
+        .nav a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            padding: 12px 20px; /* Increased padding for better clickability */
+            border-radius: 5px;
+            font-size: 24px;
+            transition: background-color 0.3s;
+        }
+        .nav a:hover {
+            background-color: #333; /* Darker background color on hover */
+        }
+        .nav a.active {
+            background-color: #4caf50; /* Green color for active link */
+        }
+        #content {
+            flex: 1;
+            padding: 20px;
+            margin-left: 250px; /* Adjust for sidebar width */
+        }
+        h1 {
+            color: #fff;
+            text-align: center;
+        }
+        form {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: calc(100% - 22px); /* Adjusted width to accommodate button */
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include adminnavbar.html on the left side of the page -->
+    <div class="sidebar">
+        <h1>Welcome Admin</h1>
+        <ul class="nav">
+            <li><a href="#" onclick="loadPage('addproduct.jsp')" class="active">Add Product</a></li>
+            <li><a href="#" onclick="loadPage('customerlist.jsp')">Customer List</a></li>
+            <li><a href="#" onclick="loadPage('todaysales.jsp')">Today's Sales</a></li>
+            <li><a href="#" onclick="loadPage('adminprofile.jsp')">Admin Profile</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main content -->
+    <div id="content">
+        <h1>Welcome to Shrutija - EMI Admin Page</h1>
+        
+        <!-- Product Form -->
+        <form action="addproduct.jsp" method="post" enctype="multipart/form-data">
+            <h2>Add Product</h2>
+            <label for="productName">Product Name:</label>
+            <input type="text" id="productNameInput" name="productNameInput" placeholder="Enter new product name" required>
+
+            <label for="sellingPrice">Total Selling Price:</label>
+            <input type="number" id="sellingPrice" name="selling_price" placeholder="Enter total selling price" required>
+
+            <label for="financeOption">Finance Option:</label>
+            <select id="financeOption" name="finance_option">
+                <option value="Bank Loan">Bank Loan</option>
+                <option value="Credit Card EMI">Credit Card EMI</option>
+                <option value="Installment Plan">Installment Plan</option>
+                <option value="Finance Lease">Finance Lease</option>
+                <option value="Hire Purchase">Hire Purchase</option>
+                <option value="Personal Loan">Personal Loan</option>
+                <option value="Cash on Delivery">Cash on Delivery</option>
+                <option value="No Cost EMI">No Cost EMI</option>
+                <option value="PayPal Credit">PayPal Credit</option>
+                <option value="Store Credit">Store Credit</option>
+            </select>
+
+            <label for="downPayment">Down Payment Accepted:</label>
+            <input type="text" id="downPayment" name="down_payment" placeholder="Enter down payment" required>
+
+            <label for="interestRate">Interest Rate (%):</label>
+            <input type="text" id="interestRate" name="interest_rate" placeholder="Enter interest rate">
+
+            <label for="totalFinanceAmount">Total Finance Amount:</label> 
+            <button type="button" onclick="calculateTotalFinance()">Calculate Total Finance Amount</button>
+            <input type="number" id="totalFinanceAmount" name="total_finance_amount" placeholder="Enter total finance amount" readonly>
+
+            <label for="acceptedInstallments">Accepted No. of Installments:</label> 
+            <input type="number" id="acceptedInstallments" name="accepted_installments" placeholder="Enter accepted number of installments" required>
+
+            <label for="installmentAmount">Amount per Month:</label> 
+            <button type="button" onclick="calculateInstallmentAmount()">Calculate Amount per Month</button>
+            <input type="number" id="installmentAmount" name="installment_amount" placeholder="Enter amount per month" readonly>
+
+            <label for="productDetails">Product Details:</label>
+            <textarea id="productDetails" name="product_details" rows="6" placeholder="Enter product details" required></textarea>
+
+            <input type="submit" value="Add Product">
+        </form>
+
+        <h2>Generate Report</h2>
+        <form id="reportForm" action="generatereport.jsp" method="post">
+            <label for="reportCriteria">Report Criteria:</label>
+            <select id="reportCriteria" name="reportCriteria">
+                <option value="customer">Customer</option>
+                <option value="product">Product</option>
+            </select>
+
+            <label for="productName">Name of Product:</label>
+            <input type="text" id="productName" name="productName" placeholder="Enter product name">
+
+            <button type="submit">Generate Report</button>
+        </form>
+    </div>
+
+    <script>
+        // JavaScript function to calculate total finance amount
+        function calculateTotalFinance() {
+            // Get values from input fields
+            var sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
+            var downPayment = parseFloat(document.getElementById('downPayment').value);
+            var interestRate = parseFloat(document.getElementById('interestRate').value);
+            
+            // Calculate total finance amount
+            var totalFinanceAmount = sellingPrice - downPayment;
+            if (!isNaN(interestRate)) {
+                totalFinanceAmount *= (1 + (interestRate / 100));
+            }
+            
+            // Update the total finance amount input field
+            document.getElementById('totalFinanceAmount').value = totalFinanceAmount.toFixed(2);
+        }
+
+        // Function to calculate accepted installments
+        function calculateAcceptedInstallments() {
+            var totalFinanceAmount = parseFloat(document.getElementById('totalFinanceAmount').value);
+            var acceptedInstallments = parseFloat(document.getElementById('acceptedInstallments').value);
+            
+            if (isNaN(totalFinanceAmount) || isNaN(acceptedInstallments) || acceptedInstallments === 0) {
+                return; // Exit the function if any value is not a number or acceptedInstallments is 0
+            }
+
+            // Calculate the accepted number of installments based on finance amount
+            var calculatedInstallments = Math.ceil(totalFinanceAmount / acceptedInstallments);
+
+            document.getElementById('acceptedInstallments').value = calculatedInstallments;
+
+            // Calculate installment amount after accepted installments are calculated
+            calculateInstallmentAmount();
+        }
+
+        // Function to calculate installment amount
+        function calculateInstallmentAmount() {
+            var totalFinanceAmount = parseFloat(document.getElementById('totalFinanceAmount').value);
+            var acceptedInstallments = parseFloat(document.getElementById('acceptedInstallments').value);
+            
+            if (isNaN(totalFinanceAmount) || isNaN(acceptedInstallments) || acceptedInstallments === 0) {
+                return; // Exit the function if total finance amount or accepted installments are not numbers or acceptedInstallments is 0
+            }
+
+            // Calculate the amount per month
+            var installmentAmount = totalFinanceAmount / acceptedInstallments;
+
+            document.getElementById('installmentAmount').value = installmentAmount.toFixed(2);
+        }
+
+        // Function to load a page
+        function loadPage(pageURL) {
+            window.location.href = pageURL;
+        }
+    </script>
+<%
+    // Your existing code to handle the product form submission
+    Connection con = null;
+    PreparedStatement ps = null;
+
+    try {
+        // Database connection
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/yourdatabase", "username", "password");
+
+        // Insert product data
+        String query = "INSERT INTO products (name, price, finance_option, down_payment, interest_rate, finance_amount, installments, installment_amount, details) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        ps = con.prepareStatement(query);
+        ps.setString(1, request.getParameter("productNameInput"));
+        ps.setDouble(2, Double.parseDouble(request.getParameter("selling_price")));
+        ps.setString(3, request.getParameter("finance_option"));
+        ps.setDouble(4, Double.parseDouble(request.getParameter("down_payment")));
+        ps.setDouble(5, Double.parseDouble(request.getParameter("interest_rate")));
+        ps.setDouble(6, Double.parseDouble(request.getParameter("total_finance_amount")));
+        ps.setInt(7, Integer.parseInt(request.getParameter("accepted_installments")));
+        ps.setDouble(8, Double.parseDouble(request.getParameter("installment_amount")));
+        ps.setString(9, request.getParameter("product_details"));
+        ps.executeUpdate();
+
+        // Close the connection
+        con.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        if (ps != null) {
+            try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+        if (con != null) {
+            try { con.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+
+    // Dummy implementation of generateReport() method
+    String generateReport() {
+        // Implement your report generation logic here
+        return "Report content goes here";
+    }
+
+    // Generate the report
+    String report = generateReport();
+
+    // Write the report to a file
+    String reportFileName = "product_report.txt";
+    try (PrintWriter writer = new PrintWriter(new FileWriter(reportFileName))) {
+        writer.println(report);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+%>
+</body>
+</html>
